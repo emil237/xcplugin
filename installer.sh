@@ -8,10 +8,10 @@
 echo "***********************************************************************************************************************"
 # Config script #
 TMPDIR='/tmp'
-VERSION='1.8'
+VERSION='1.9'
 MY_URL='https://raw.githubusercontent.com/emil237/xcplugin/main'
-MY_IPK="enigma2-plugin-extensions-xcplugin-forever_1.8_all.ipk"
-MY_DEB="enigma2-plugin-extensions-xcplugin-forever_1.8_all.deb"
+MY_IPK="enigma2-plugin-extensions-xcplugin-forever_1.9_all.ipk"
+MY_DEB="enigma2-plugin-extensions-xcplugin-forever_1.9_all.deb"
 ####################
 MY_EM='============================================================================================================'
 #  Remove Old Plugin  #
@@ -60,6 +60,8 @@ wait
 init 4
 init 3
 exit 0
+
+
 
 
 
