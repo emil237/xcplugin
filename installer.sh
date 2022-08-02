@@ -1,88 +1,92 @@
 #!/bin/sh
 # ###########################################
-# SCRIPT : DOWNLOAD AND INSTALL XcPlugin Forever #
+# SCRIPT : DOWNLOAD AND INSTALL XcPlugin Forever
 # ###########################################
+#
 # Command: wget https://raw.githubusercontent.com/emil237/xcplugin/main/installer.sh -qO - | /bin/sh
 #
 # ###########################################
-echo "***********************************************************************************************************************"
-# Config script #
+
+###########################################
+# Configure where we can find things here #
 TMPDIR='/tmp'
-VERSION='2.2'
+PACKAGE='enigma2-plugin-extensions-xcplugin-forever'
 MY_URL='https://raw.githubusercontent.com/emil237/xcplugin/main'
-MY_IPK="enigma2-plugin-extensions-xcplugin-forever_2.2_all.ipk"
-MY_DEB="enigma2-plugin-extensions-xcplugin-forever_2.2_all.deb"
+URL_VER='https://raw.githubusercontent.com/emil237/xcplugin/main'
+
+#################
+# Check Version #
+VERSION=$(wget $URL_VER/version -qO- | cut -d "=" -f2-)
+
 ####################
-MY_EM='============================================================================================================'
-#  Remove Old Plugin  #
-echo "   >>>>   Remove old version   "
+#  Image Checking  #
 
-rm -r /usr/lib/enigma2/python/Plugins/Extensions/XCplugin
-
-#################################
-    
-###################
-echo "============================================================================================================================"
- echo " DOWNLOAD AND INSTALL PLUGIN "
-
-echo "   Install Plugin please wait "
-
-cd /tmp 
-
-set -e
-     wget "$MY_URL/$MY_IPK"
-  wait
-     wget "$MY_URL/$MY_DEB"
-
-if which dpkg > /dev/null 2>&1; then
-		dpkg -i --force-overwrite $MY_DEB; apt-get install -f -y
-	else
-		opkg install --force-reinstall $MY_IPK
-	fi
-echo "================================="
-set +e
-cd ..
-wait
-rm -f /tmp/$MY_IPK
-rm -f /tmp/$MY_DEB
-	if [ $? -eq 0 ]; then
-echo ">>>>  SUCCESSFULLY INSTALLED <<<<"
+if [ -f /etc/opkg/opkg.conf ]; then
+    OSTYPE='Opensource'
+    OPKGINSTAL='opkg install'
+    OPKGLIST='opkg list-installed'
+    OPKGREMOV='opkg remove --force-depends'
+elif [ -f /etc/apt/apt.conf ]; then
+    OSTYPE='DreamOS'
+    OPKGINSTAL='apt-get install'
+    OPKGLIST='apt-get list-installed'
+    OPKGREMOV='apt-get purge --auto-remove'
+    DPKINSTALL='dpkg -i --force-overwrite'
 fi
-		echo "********************************************************************************"
-echo "   UPLOADED BY  >>>>   EMIL_NABIL " 
+
+##################################
+# Remove previous files (if any) #
+rm -rf $TMPDIR/"${PACKAGE:?}"* >/dev/null 2>&1
+
+######################
+#  Remove Old Plugin #
+if [ "$($OPKGLIST $PACKAGE | awk '{ print $3 }')" = "$VERSION" ]; then
+    echo " You are use the laste Version: $VERSION"
+    exit 1
+elif [ -z "$($OPKGLIST $PACKAGE | awk '{ print $3 }')" ]; then
+    echo
+    clear
+else
+    $OPKGREMOV $PACKAGE
+fi
+
+###################
+#  Install Plugin #
+echo "Insallling XcPlugin Forever plugin Please Wait ......"
+if [ $OSTYPE = "Opensource" ]; then
+    wget $MY_URL/${PACKAGE}_"${VERSION}"_all.ipk -qP $TMPDIR
+    $OPKGINSTAL $TMPDIR/${PACKAGE}_"${VERSION}"_all.ipk
+else
+    wget $MY_URL/${PACKAGE}_"${VERSION}"_all.deb -qP $TMPDIR
+    $DPKINSTALL $TMPDIR/${PACKAGE}_"${VERSION}"_all.deb
+    $OPKGINSTAL -f -y
+fi
+
+#########################
+# Remove files (if any) #
+rm -rf $TMPDIR/"${PACKAGE:?}"*
+
+sleep 1
+clear
+echo ""
+echo "****************************************************************************************"
+echo "**                                                                                     *"
+echo "**                            XcPlugin   : $VERSION                                         *"
+echo "**                            Uploaded by:   >>>>>>>   EMIL_NABIL                                  *"
 sleep 4;
-echo "  Develop by : Lululla "                            
-echo "$MY_EM"
-###################                                                                                                                  
-echo " your Device will RESTART Now " 
-echo "**********************************************************************************"
-wait
-init 4
-init 3
+echo "**         Develop by : Lululla                                     *"
+sleep 2;
+echo "**                                                                                     *"
+echo "****************************************************************************************"
+echo ""
+
+if [ $OSTYPE = "Opensource" ]; then
+    killall -9 enigma2
+else
+    systemctl restart enigma2
+fi
+
 exit 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
